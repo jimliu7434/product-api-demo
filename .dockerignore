@@ -1,0 +1,14 @@
+node_modules
+log
+logs
+.vscode
+*.tar
+*.pprof
+*.gz
+*.zip
+files
+archive
+tozip
+.docker_temp*
+_deploy
+_logs
