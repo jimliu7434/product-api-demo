@@ -1,0 +1,5 @@
+server:
+  activeMsg: DEBUG environment\r\n # server 啟動時的訊息
+  port: :10302 # server listen port
+  fileEnabled: false # file logger switch
+  
