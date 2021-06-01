@@ -13,55 +13,93 @@
 >3. Place Order - 使用者可以下訂單並取得是否成功下訂 (請自訂下訂所需欄位、無須考慮金流)
 >    Required fields for UI display: 下訂數量、訂單狀態 (成功與否)、訂單編號
 
+## System Requirement
+
+Go 1.16 up
+
+## How to debug
+
+```bash
+go run main.go
+```
+
+## How to build
+
+```bash
+# linux
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app
+
+# windows
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o app.exe
+```
+
+## How to test
+
+Postman import *__test__/postman/product-api-demo.postman_collection.json*
+
+## How to use
+
+```bash
+# linux
+app --debugmode -f "./_config/config.yaml"
+
+# windows
+app.exe --debugmode -f "./_config/config.yaml"
+```
+
 ## API
 
 | Method | API                     | Description              |
 | :----- | :---------------------- | :----------------------- |
-| GET    | /api/types              | 取得分類清單             |
-| GET    | /api/products/:typeid   | 取得指定分類的商品清單   |
+| GET    | /api/cats               | 取得分類清單             |
+| GET    | /api/products/:catid    | 取得指定分類的商品清單   |
 | GET    | /api/product/:productid | 取得指定商品的明細       |
 | POST   | /api/order/new          | 建立新訂單               |
 | GET    | /api/order/:orderid     | 根據訂單編號取得訂單明細 |
 
-### [GET] /api/types
+### [GET] /api/cats
 
 HTTP/1.1  
 application/json  
 
 ```text
-[GET] /api/types
+[GET] /api/cats
 ```
 
 * Response Body
 
-| Key    | Must | Type   | Description      |
-| :----- | :--- | :----- | :--------------- |
-| typeid | Y    | String | type unique id   |
-| desc   | Y    | String | type description |
+| Key   | Must | Type     | Description          |
+| :---- | :--- | :------- | :------------------- |
+| cats  | Y    | Object[] | 分類清單             |
+| catid | Y    | String   | category unique id   |
+| desc  | Y    | String   | category description |
 
 ```js
-[
-    {
-        "typeid": "T0001",
-        "desc": "最新商品"
-    },
-    {
-        "typeid": "T0002",
-        "desc": "推薦商品"
-    }
-]
+{
+    "cats":[
+        {
+            "catid": "T0001",
+            "desc": "最新商品"
+        },
+        {
+            "catid": "T0002",
+            "desc": "推薦商品"
+        }
+    ]
+}
+
 ```
 
-### [GET] /api/products/:typeid
+### [GET] /api/products/:catid
 
 HTTP/1.1  
 application/json  
 
 * Request Route Variables
 
-| Key    | Description                       |
-| :----- | :-------------------------------- |
-| typeid | 由 */api/types* 取得的分類 typeid |
+| Key   | Description                     |
+| :---- | :------------------------------ |
+| catid | 由 */api/cats* 取得的分類 catid |
 
 ```text
 [GET] /api/products/T0001
@@ -154,16 +192,22 @@ application/json
 
 * Request Body
 
-| Key             | Must | Type     | Description    |
-| :-------------- | :--- | :------- | :------------- |
-| order           | Y    | Object[] | 訂單內容       |
-| order.productid | Y    | String   | 商品 unique id |
-| order.amount    | Y    | Number   | 欲購買數量     |
+| Key                | Must | Type     | Description    |
+| :----------------- | :--- | :------- | :------------- |
+| name               | Y    | String   | 購買人姓名     |
+| addr               | Y    | String   | 購買人寄送地址 |
+| mobile             | Y    | String   | 購買人手機     |
+| products           | Y    | Object[] | 訂單內容       |
+| products.productid | Y    | String   | 商品 unique id |
+| products.amount    | Y    | Number   | 欲購買數量     |
 
 ```js
 // [POST] /api/order/new
 {
-    order: [
+    "name": "王小名",
+    "addr": "台北市中山區",
+    "mobile": "0910000000",
+    "products": [
         {
             "productid": "000001",
             "amount": 11
@@ -178,23 +222,29 @@ application/json
 
 * Response Body
 
-| Key             | Must | Type     | Description                              |
-| :-------------- | :--- | :------- | :--------------------------------------- |
-| result          | Y    | Boolean  | 訂單建立是否成功? true=成功 / false=失敗 |
-| orderid         | N    | String   | 當 result=true 時，回傳建立的訂單編號    |
-| totalprice      | N    | Number   | 訂單總價                                 |
-| currency        | N    | String   | 幣別                                     |
-| order           | N    | Object[] | 當 result=true 時，回傳訂單內容          |
-| order.productid | Y    | String   | 訂購商品 ID                              |
-| order.amount    | Y    | Number   | Approved amount (不一定與要求的數量相同) |
+| Key                | Must | Type     | Description                              |
+| :----------------- | :--- | :------- | :--------------------------------------- |
+| result             | Y    | Boolean  | 訂單建立是否成功? true=成功 / false=失敗 |
+| orderid            | N    | String   | 當 result=true 時，回傳建立的訂單編號    |
+| name               | N    | String   | 當 result=true 時，回傳購買人姓名        |
+| addr               | N    | String   | 當 result=true 時，回傳購買人寄送地址    |
+| mobile             | N    | String   | 當 result=true 時，回傳購買人手機        |
+| totalprice         | N    | Number   | 當 result=true 時，回傳訂單總價          |
+| currency           | N    | String   | 當 result=true 時，回傳幣別              |
+| products           | N    | Object[] | 當 result=true 時，回傳訂購內容          |
+| products.productid | Y    | String   | 訂購商品 ID                              |
+| products.amount    | Y    | Number   | Approved amount (不一定與要求的數量相同) |
 
 ```js
 {
     "result": true,
     "orderid": "20210601000001",
+    "name": "王小名",
+    "addr": "台北市中山區",
+    "mobile": "0910000000",
     "totalprice": 5000,
     "currency": "NTD",
-    "order": [
+    "products": [
         {
             "productid": "000001",
             "amount": 10
@@ -228,21 +278,27 @@ application/json
 
 * Response Body
 
-| Key              | Must | Type     | Description |
-| :--------------- | :--- | :------- | :---------- |
-| orderid          | Y    | String   | 訂單編號    |
-| totalprice       | Y    | Number   | 訂單總價    |
-| currency         | Y    | String   | 幣別        |
-| detail           | Y    | Object[] | 訂單細目    |
-| detail.productid | Y    | String   | 商品代碼    |
-| detail.amount    | Y    | Number   | 訂購數量    |
+| Key                | Must | Type     | Description    |
+| :----------------- | :--- | :------- | :------------- |
+| orderid            | Y    | String   | 訂單編號       |
+| name               | Y    | String   | 購買人姓名     |
+| addr               | Y    | String   | 購買人寄送地址 |
+| mobile             | Y    | String   | 購買人手機     |
+| totalprice         | Y    | Number   | 訂單總價       |
+| currency           | Y    | String   | 幣別           |
+| products           | Y    | Object[] | 訂單細目       |
+| products.productid | Y    | String   | 商品代碼       |
+| products.amount    | Y    | Number   | 訂購數量       |
 
 ```js
 {
     "orderid": "20210601000001",
+    "name": "王小名",
+    "addr": "台北市中山區",
+    "mobile": "0910000000",
     "totalprice": 5000,
     "currency": "NTD",
-    "detail": [
+    "products": [
         {
             "productid": "000001",
             "amount": 10
