@@ -12,3 +12,4 @@ tozip
 .docker_temp*
 _deploy
 _logs
+__debug_bin
