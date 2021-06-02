@@ -35,7 +35,7 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -o app.exe
 
 ## How to test
 
-Postman import *__test__/postman/product-api-demo.postman_collection.json*
+Postman import *\_\_test\_\_/postman/product-api-demo.postman_collection.json*
 
 ## How to use
 
